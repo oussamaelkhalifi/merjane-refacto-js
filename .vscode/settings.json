@@ -9,8 +9,8 @@
 		"editor.defaultFormatter": "samverschueren.linter-xo"
 	},
 	"[typescript]": {
-		"editor.defaultFormatter": "samverschueren.linter-xo"
-	},
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
 	"[typescriptreact]": {
 		"editor.defaultFormatter": "samverschueren.linter-xo"
 	}

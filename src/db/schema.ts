@@ -1,53 +1,76 @@
-import {relations} from 'drizzle-orm';
+import { relations } from 'drizzle-orm';
 import {
-	text, integer, sqliteTable, primaryKey,
+  text,
+  integer,
+  sqliteTable,
+  primaryKey,
 } from 'drizzle-orm/sqlite-core';
+
+// Define enum here so drizzle-kit can resolve it (drizzle-kit doesn't support path aliases)
+export const PRODUCT_TYPE = {
+  NORMAL: 'NORMAL',
+  SEASONAL: 'SEASONAL',
+  EXPIRABLE: 'EXPIRABLE',
+} as const;
+
+export type ProductType = (typeof PRODUCT_TYPE)[keyof typeof PRODUCT_TYPE];
 
 // Declaring enum in database
 export const products = sqliteTable('products', {
-	id: integer('id').notNull().primaryKey(),
-	leadTime: integer('lead_time').notNull(),
-	available: integer('available').notNull(),
-	type: text('type').notNull(),
-	name: text('name').notNull(),
-	expiryDate: integer('expiry_date', {mode: 'timestamp_ms'}),
-	seasonStartDate: integer('season_start_date', {mode: 'timestamp_ms'}),
-	seasonEndDate: integer('season_end_date', {mode: 'timestamp_ms'}),
+  id: integer('id').notNull().primaryKey(),
+  leadTime: integer('lead_time').notNull(),
+  available: integer('available').notNull(),
+  type: text('type', {
+    enum: [PRODUCT_TYPE.NORMAL, PRODUCT_TYPE.SEASONAL, PRODUCT_TYPE.EXPIRABLE],
+  })
+    .$type<ProductType>()
+    .notNull(),
+  name: text('name').notNull(),
+  expiryDate: integer('expiry_date', { mode: 'timestamp_ms' }),
+  seasonStartDate: integer('season_start_date', { mode: 'timestamp_ms' }),
+  seasonEndDate: integer('season_end_date', { mode: 'timestamp_ms' }),
 });
 
 export type Product = typeof products.$inferSelect;
 export type ProductInsert = typeof products.$inferInsert;
 
 export const orders = sqliteTable('orders', {
-	id: integer('id').notNull().primaryKey(),
+  id: integer('id').notNull().primaryKey(),
 });
 
 export type Order = typeof orders.$inferSelect;
 export type OrderInsert = typeof orders.$inferInsert;
 
-export const ordersToProducts = sqliteTable('orders_to_products', {
-	orderId: integer('order_id').references(() => orders.id).notNull(),
-	productId: integer('product_id').references(() => products.id).notNull(),
-}, t => ({
-	pk: primaryKey({columns: [t.orderId, t.productId]}),
+export const ordersToProducts = sqliteTable(
+  'orders_to_products',
+  {
+    orderId: integer('order_id')
+      .references(() => orders.id)
+      .notNull(),
+    productId: integer('product_id')
+      .references(() => products.id)
+      .notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.orderId, t.productId] }),
+  })
+);
+
+export const productsRelations = relations(products, ({ many }) => ({
+  orders: many(ordersToProducts),
 }));
 
-export const productsRelations = relations(products, ({many}) => ({
-	orders: many(ordersToProducts),
+export const ordersRelations = relations(orders, ({ many }) => ({
+  products: many(ordersToProducts),
 }));
 
-export const ordersRelations = relations(orders, ({many}) => ({
-	products: many(ordersToProducts),
+export const ordersToProductsRelations = relations(ordersToProducts, ({ one }) => ({
+  product: one(products, {
+    fields: [ordersToProducts.productId],
+    references: [products.id],
+  }),
+  order: one(orders, {
+    fields: [ordersToProducts.orderId],
+    references: [orders.id],
+  }),
 }));
-
-export const ordersToProductsRelations = relations(ordersToProducts, ({one}) => ({
-	product: one(products, {
-		fields: [ordersToProducts.productId],
-		references: [products.id],
-	}),
-	order: one(orders, {
-		fields: [ordersToProducts.orderId],
-		references: [orders.id],
-	}),
-}));
-

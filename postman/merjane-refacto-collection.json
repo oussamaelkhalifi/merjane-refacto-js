@@ -1,0 +1,479 @@
+{
+  "info": {
+    "name": "Merjane Refacto API",
+    "description": "Collection to test all order processing use cases for the Merjane Refacto JS project",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup",
+      "description": "Setup requests to create test data",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "NORMAL Products",
+      "description": "Test cases for NORMAL product type",
+      "item": [
+        {
+          "name": "Process Order - NORMAL available > 0 (decrement stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/1/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "1", "processOrder"]
+            },
+            "description": "Test case: NORMAL product with available > 0\n\nExpected behavior: Stock should be decremented by 1\n\nSetup required:\n- Create a NORMAL product with available = 10, leadTime = 15\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - NORMAL out of stock with leadTime (delay notification)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/2/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "2", "processOrder"]
+            },
+            "description": "Test case: NORMAL product with available = 0, leadTime > 0\n\nExpected behavior: Delay notification should be sent\n\nSetup required:\n- Create a NORMAL product with available = 0, leadTime = 10\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - NORMAL discontinued (no action)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/3/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "3", "processOrder"]
+            },
+            "description": "Test case: NORMAL product with available = 0, leadTime = 0\n\nExpected behavior: No action taken, no notifications\n\nSetup required:\n- Create a NORMAL product with available = 0, leadTime = 0\n- Create an order linked to this product"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "EXPIRABLE Products",
+      "description": "Test cases for EXPIRABLE product type",
+      "item": [
+        {
+          "name": "Process Order - EXPIRABLE available, not expired (decrement stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/4/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "4", "processOrder"]
+            },
+            "description": "Test case: EXPIRABLE product with available > 0 and expiryDate in future\n\nExpected behavior: Stock should be decremented by 1\n\nSetup required:\n- Create an EXPIRABLE product with available = 30, expiryDate = 26 days from now\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - EXPIRABLE expired (expiration notification)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/5/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "5", "processOrder"]
+            },
+            "description": "Test case: EXPIRABLE product with expiryDate in the past\n\nExpected behavior: Expiration notification sent, product set to out of stock\n\nSetup required:\n- Create an EXPIRABLE product with available = 6, expiryDate = 2 days ago\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - EXPIRABLE unavailable, not expired (expiration notification)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/6/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "6", "processOrder"]
+            },
+            "description": "Test case: EXPIRABLE product with available = 0 and expiryDate in future\n\nExpected behavior: Expiration notification sent\n\nSetup required:\n- Create an EXPIRABLE product with available = 0, expiryDate = 10 days from now\n- Create an order linked to this product"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SEASONAL Products",
+      "description": "Test cases for SEASONAL product type",
+      "item": [
+        {
+          "name": "Process Order - SEASONAL in season, available (decrement stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/7/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "7", "processOrder"]
+            },
+            "description": "Test case: SEASONAL product in season with available > 0\n\nExpected behavior: Stock should be decremented by 1\n\nSetup required:\n- Create a SEASONAL product with available = 30, seasonStartDate = 2 days ago, seasonEndDate = 58 days from now\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - SEASONAL in season, restock in time (delay notification)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/8/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "8", "processOrder"]
+            },
+            "description": "Test case: SEASONAL product in season, available = 0, leadTime allows restock before season ends\n\nExpected behavior: Delay notification sent\n\nSetup required:\n- Create a SEASONAL product with available = 0, leadTime = 5, seasonStartDate = 10 days ago, seasonEndDate = 30 days from now\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - SEASONAL in season, restock too late (out of stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/9/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "9", "processOrder"]
+            },
+            "description": "Test case: SEASONAL product in season, available = 0, leadTime exceeds remaining season\n\nExpected behavior: Out of stock notification sent, product set to out of stock\n\nSetup required:\n- Create a SEASONAL product with available = 0, leadTime = 60, seasonStartDate = 10 days ago, seasonEndDate = 20 days from now\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - SEASONAL season not started (out of stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/10/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "10", "processOrder"]
+            },
+            "description": "Test case: SEASONAL product with season not started yet\n\nExpected behavior: Out of stock notification sent\n\nSetup required:\n- Create a SEASONAL product with available = 30, seasonStartDate = 180 days from now, seasonEndDate = 240 days from now\n- Create an order linked to this product"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - SEASONAL season ended (out of stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/11/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "11", "processOrder"]
+            },
+            "description": "Test case: SEASONAL product with season already ended\n\nExpected behavior: Out of stock notification sent\n\nSetup required:\n- Create a SEASONAL product with available = 10, seasonStartDate = 60 days ago, seasonEndDate = 5 days ago\n- Create an order linked to this product"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Edge Cases",
+      "description": "Edge case tests",
+      "item": [
+        {
+          "name": "Process Order - Order Not Found",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/99999/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "99999", "processOrder"]
+            },
+            "description": "Test case: Non-existent order\n\nExpected behavior: 500 error with 'Order not found' message"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - Invalid Order ID (non-numeric)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/abc/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "abc", "processOrder"]
+            },
+            "description": "Test case: Invalid order ID format\n\nExpected behavior: 400 validation error"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - Empty Order (no products)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/12/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "12", "processOrder"]
+            },
+            "description": "Test case: Order with no products\n\nExpected behavior: Success (200), no notifications sent\n\nSetup required:\n- Create an order with no products linked"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Order - Multiple Products Mixed Types",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/13/processOrder",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "13", "processOrder"]
+            },
+            "description": "Test case: Order with multiple products of different types\n\nExpected behavior: Each product processed according to its type rules\n\nSetup required:\n- Create products of all 3 types (NORMAL, EXPIRABLE, SEASONAL)\n- Create an order linked to all these products"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

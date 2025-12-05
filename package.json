@@ -9,6 +9,7 @@
     "test:unit": "vitest -c vitest.unit.config.ts",
     "test:integration": "cross-env CONFIG_PATH=\".env.test\" vitest -c vitest.integration.config.ts",
     "drizzle:push": "cross-env CONFIG_PATH=\".env.dev\" drizzle-kit push --config src/db/drizzle.config.ts",
+    "seed:postman": "tsx scripts/seed-postman-data.ts",
     "lint": "xo"
   },
   "type": "module",
